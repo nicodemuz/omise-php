@@ -1,5 +1,8 @@
 <?php
 
+define('OMISE_LIB_PATH', __DIR__ . '/omise');
+
+require_once dirname(__FILE__).'/omise/Clients/OmiseHttpClient.php';
 require_once dirname(__FILE__).'/omise/OmiseAccount.php';
 require_once dirname(__FILE__).'/omise/OmiseBalance.php';
 require_once dirname(__FILE__).'/omise/OmiseCard.php';

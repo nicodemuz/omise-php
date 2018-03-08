@@ -3,7 +3,6 @@
 require_once dirname(__FILE__).'/obj/OmiseObject.php';
 require_once dirname(__FILE__).'/../exception/OmiseExceptions.php';
 
-define('OMISE_PHP_LIB_VERSION', '2.9.0');
 define('OMISE_API_URL', 'https://api.omise.co/');
 define('OMISE_VAULT_URL', 'https://vault.omise.co/');
 
@@ -14,10 +13,6 @@ class OmiseApiResource extends OmiseObject
     const REQUEST_POST = 'POST';
     const REQUEST_DELETE = 'DELETE';
     const REQUEST_PATCH = 'PATCH';
-
-    // Timeout settings
-    private $OMISE_CONNECTTIMEOUT = 30;
-    private $OMISE_TIMEOUT = 60;
 
     /**
      * Returns an instance of the class given in $clazz or raise an error.
@@ -136,11 +131,12 @@ class OmiseApiResource extends OmiseObject
      */
     protected function execute($url, $requestMethod, $key, $params = null)
     {
-        // If this class is execute by phpunit > get test mode.
         if (preg_match('/phpunit/', $_SERVER['SCRIPT_NAME'])) {
             $result = $this->_executeTest($url, $requestMethod, $key, $params);
         } else {
-            $result = $this->_executeCurl($url, $requestMethod, $key, $params);
+            $client = new OmiseClient(new OmiseHttpCurlClient);
+            $client->setCredential($key);
+            $result = $client->request($requestMethod, $url, $params);
         }
 
         // Decode the JSON response as an associative array.
@@ -157,35 +153,6 @@ class OmiseApiResource extends OmiseObject
         }
 
         return $array;
-    }
-
-    /**
-     * @param  string $url
-     * @param  string $requestMethod
-     * @param  array  $params
-     *
-     * @throws OmiseException
-     *
-     * @return string
-     */
-    private function _executeCurl($url, $requestMethod, $key, $params = null)
-    {
-        $ch = curl_init($url);
-
-        curl_setopt_array($ch, $this->genOptions($requestMethod, $key.':', $params));
-
-        // Make a request or thrown an exception.
-        if (($result = curl_exec($ch)) === false) {
-            $error = curl_error($ch);
-            curl_close($ch);
-
-            throw new Exception($error);
-        }
-
-        // Close.
-        curl_close($ch);
-
-        return $result;
     }
 
     /**
@@ -238,68 +205,6 @@ class OmiseApiResource extends OmiseObject
         }
 
         return $result;
-    }
-
-    /**
-     * Creates an option for php-curl from the given request method and parameters in an associative array.
-     *
-     * @param  string $requestMethod
-     * @param  array  $params
-     *
-     * @return array
-     */
-    private function genOptions($requestMethod, $userpwd, $params)
-    {
-        $user_agent        = "OmisePHP/".OMISE_PHP_LIB_VERSION." PHP/".phpversion();
-        $omise_api_version = defined('OMISE_API_VERSION') ? OMISE_API_VERSION : null;
-
-        $options = array(
-            // Set the HTTP version to 1.1.
-            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-            // Set the request method.
-            CURLOPT_CUSTOMREQUEST  => $requestMethod,
-            // Make php-curl returns the data as string.
-            CURLOPT_RETURNTRANSFER => true,
-            // Do not include the header in the output.
-            CURLOPT_HEADER         => false,
-            // Track the header request string and set the referer on redirect.
-            CURLINFO_HEADER_OUT    => true,
-            CURLOPT_AUTOREFERER    => true,
-            // Make HTTP error code above 400 an error.
-            // CURLOPT_FAILONERROR => true,
-            // Time before the request is aborted.
-            CURLOPT_TIMEOUT        => $this->OMISE_TIMEOUT,
-            // Time before the request is aborted when attempting to connect.
-            CURLOPT_CONNECTTIMEOUT => $this->OMISE_CONNECTTIMEOUT,
-            // Authentication.
-            CURLOPT_USERPWD        => $userpwd,
-            // CA bundle.
-            CURLOPT_CAINFO         => dirname(__FILE__).'/../../../data/ca_certificates.pem'
-        );
-
-        // Config Omise API Version
-        if ($omise_api_version) {
-            $options += array(CURLOPT_HTTPHEADER => array("Omise-Version: ".$omise_api_version));
-
-            $user_agent .= ' OmiseAPI/'.$omise_api_version;
-        }
-
-        // Config UserAgent
-        if (defined('OMISE_USER_AGENT_SUFFIX')) {
-            $options += array(CURLOPT_USERAGENT => $user_agent." ".OMISE_USER_AGENT_SUFFIX);
-        } else {
-            $options += array(CURLOPT_USERAGENT => $user_agent);
-        }
-
-        // Also merge POST parameters with the option.
-        if (is_array($params) && count($params) > 0) {
-            $http_query = http_build_query($params);
-            $http_query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $http_query);
-
-            $options += array(CURLOPT_POSTFIELDS => $http_query);
-        }
-
-        return $options;
     }
 
     /**
