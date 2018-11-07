@@ -5,7 +5,7 @@ require_once dirname(__FILE__).'/omise/res/OmiseApiResource.php';
 require_once dirname(__FILE__).'/omise/Http/Response/Handler.php';
 
 // Errors
-require_once dirname(__FILE__).'/omise/exception/OmiseExceptions.php';
+require_once dirname(__FILE__).'/omise/Exception/OmiseException.php';
 
 // API Resources.
 require_once dirname(__FILE__).'/omise/OmiseAccount.php';
