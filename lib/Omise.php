@@ -8,7 +8,11 @@ require_once dirname(__FILE__).'/omise/Http/Response/Handler.php';
 // Errors
 require_once dirname(__FILE__).'/omise/exception/OmiseExceptions.php';
 
+// API Capabilities.
+require_once dirname(__FILE__).'/omise/ApiCapabilities/Listable.php';
+
 // API Resources.
+require_once dirname(__FILE__).'/omise/Collection.php';
 require_once dirname(__FILE__).'/omise/OmiseAccount.php';
 require_once dirname(__FILE__).'/omise/OmiseBalance.php';
 require_once dirname(__FILE__).'/omise/OmiseCard.php';

@@ -4,6 +4,8 @@ class OmiseCharge extends OmiseApiResource
 {
     const ENDPOINT = 'charges';
 
+    use Omise\ApiCapabilities\Listable;
+
     /**
      * Retrieves a charge.
      *
