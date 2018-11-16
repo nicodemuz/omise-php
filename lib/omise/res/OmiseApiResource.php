@@ -110,13 +110,25 @@ class OmiseApiResource extends OmiseObject
     /**
      * Reloads the resource with latest data.
      *
-     * @param  string $url
-     *
      * @throws Exception|OmiseException
      */
-    protected function g_reload($url)
+    protected function g_reload()
     {
-        $result = $this->execute($url, self::REQUEST_GET, $this->getResourceKey());
+        if ($this['object'] === 'list') {
+            $querystring = http_build_query(array(
+                'from'   => $this['from'],
+                'to'     => $this['to'],
+                'limit'  => $this['limit'],
+                'offset' => $this['offset'],
+                'order'  => $this['order']
+            ));
+
+            $reloadUrl = OMISE_API_URL . $this['location'] . '?' . $querystring;
+        } else {
+            $reloadUrl = OMISE_API_URL . $this['location'];
+        }
+
+        $result = $this->execute($reloadUrl, self::REQUEST_GET, $this->getResourceKey());
         $this->refresh($result);
     }
 
