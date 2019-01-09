@@ -11,7 +11,12 @@ if (version_compare(phpversion(), '5.3.2') >= 0 && file_exists(dirname(__FILE__)
     require_once dirname(__FILE__).'/../../lib/Omise.php';
 }
 
+require_once dirname(__FILE__) . '/../Utils/MockClient.php';
+
 abstract class TestConfig extends PHPUnit_Framework_TestCase
 {
-
+	public function setUp()
+	{
+		\Omise\ApiRequestor::setHttpClient(new MockClient);
+	}
 }
