@@ -9,7 +9,7 @@ class OmiseCapabilities extends OmiseApiResource
      * @var array  of the filterable keys.
      */
     static $filters = [
-        'backend' => ['currency', 'type', 'chargeAmount']
+        'backend' => ['currency', 'type', 'chargeAmount', 'populateInstallments']
     ];
 
     protected function __construct($publickey = null, $secretkey = null)
@@ -131,6 +131,21 @@ class OmiseCapabilities extends OmiseApiResource
             }
             $max = empty($backend->amount['max']) ? $defMax : $backend->amount['max'];
             return $amount >= $min && $amount <= $max;
+        };
+    }
+
+    /**
+     * Makes a filter function to expand installment backend details based on proposed payment details
+     *
+     * @param  string $type
+     *
+     * @return function
+     */
+    public function makeBackendFilterPopulateInstallments($payment)
+    {
+        return function (&$backend) use ($payment) {
+            $backend->expanded = $payment;
+            return true;
         };
     }
 
