@@ -125,6 +125,7 @@ class OmiseCapabilities extends OmiseApiResource
         return function ($backend) use ($amount, $defMin, $defMax) {
             // temporary hack for now to correct min value for instalments to fixed minium (different to normal charge minimum)
             if ($backend->type == 'installment') {
+                // TODO - move to having an installment minimum for each supported currency
                 $min = self::INSTALLMENT_MINIMUM;
             } else {
                 $min = empty($backend->amount['min']) ? $defMin : $backend->amount['min'];
